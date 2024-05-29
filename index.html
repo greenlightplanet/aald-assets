@@ -213,17 +213,77 @@
     let currentVideoIndex = 0;
     let isTabActive = true;
 
-    function logEvent(eventType, videoUrl, ordinal, videoTime) {
+    function logEvent(eventType, videoUrl, ordinal, videoTime, isTabActive) {
       const timestamp = new Date().toISOString();
       // console.log(`[${timestamp}] ${eventType} - Video URL: ${videoUrl} - Ordinal: ${ordinal} - Video Time: ${videoTime}`);
       console.log(`
 [${timestamp}] Event Type: ${eventType}
 Video URL: ${videoUrl}
+UUID: ${uuId}
+Prospect Id: ${prospectIdVariable}
 Ordinal: ${ordinal}
 Video Time: ${videoTime}
-UUID: ${uuId}
+Tab Activity: ${isTabActive}
       `);
     }
+
+    function logPageLoadEvent(eventType) {
+      const timestamp = new Date().toISOString();
+      console.log(`
+[${timestamp}] Event Type: ${eventType}
+UUID: ${uuId}
+  `);
+    }
+    // function logEvent(eventType, videoUrl, ordinal, videoTime, isTabActive) {
+    //   const timestamp = new Date().toISOString();
+    //   const data = {
+    //     timestamp: timestamp,
+    //     event_type: eventType,
+    //     video_url: videoUrl,
+    //     uuid: uuId,
+    //     prospect_id: prospectIdVariable,
+    //     ordinal: ordinal,
+    //     video_time: videoTime,
+    //     tab_activity: isTabActive
+    //   };
+    //   fetch('/log_video_event/', {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify(data),
+    //   })
+    //     .then(response => response.json())
+    //     .then(data => {
+    //       console.log('Success:', data);
+    //     })
+    //     .catch((error) => {
+    //       console.error('Error:', error);
+    //     });
+    // }
+
+    // function logPageLoadEvent(eventType) {
+    //   const timestamp = new Date().toISOString();
+    //   const data = {
+    //     timestamp: timestamp,
+    //     event_type: eventType,
+    //     uuid: uuId
+    //   };
+    //   fetch('/log_page_load_event/', {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify(data),
+    //   })
+    //     .then(response => response.json())
+    //     .then(data => {
+    //       console.log('Success:', data);
+    //     })
+    //     .catch((error) => {
+    //       console.error('Error:', error);
+    //     });
+    // }
 
     function preloadAllVideos() {
       if (playlist.length > 0) {
@@ -259,7 +319,7 @@ UUID: ${uuId}
         if (currentVideoIndex < playlist.length) {
           const videoUrl = playlist[currentVideoIndex].url;
           const ordinal = currentVideoIndex + 1;
-          logEvent('Video Opened', videoUrl, ordinal, 0);
+          logEvent('Video Started', videoUrl, ordinal, 0, isTabActive);
           videoPlayer.src = videoUrl;
           videoTitleElement.textContent = playlist[currentVideoIndex].title;
           prospectIdElement.textContent = `Prospect ID: ${prospectIdVariable}`;
@@ -362,27 +422,32 @@ UUID: ${uuId}
       }
     }
 
-    document.addEventListener("visibilitychange", function () {
-      if (document.visibilityState === "visible") {
-        isTabActive = true;
-        logEvent('Tab Active', playlist[currentVideoIndex - 1].url, currentVideoIndex, videoPlayer.currentTime);
-      } else {
-        isTabActive = false;
-        logEvent('Tab Inactive', playlist[currentVideoIndex - 1].url, currentVideoIndex, videoPlayer.currentTime);
-      }
+    // const videoPlayer = document.getElementById("videoPlayer");
+    // videoPlayer.addEventListener('play', () => {
+    //   if (isTabActive) {
+    //     logEvent('Video Play - Tab Active', playlist[currentVideoIndex - 1].url, currentVideoIndex, videoPlayer.currentTime, isTabActive);
+    //   }
+    // });
+    // videoPlayer.addEventListener('pause', () => {
+    //   if (isTabActive) {
+    //     logEvent('Video Pause - Tab Active', playlist[currentVideoIndex - 1].url, currentVideoIndex, videoPlayer.currentTime, isTabActive);
+    //   }
+    // });
+
+    document.addEventListener("DOMContentLoaded", function () {
+      logPageLoadEvent('Page Loaded');
+
+      document.addEventListener("visibilitychange", function () {
+        if (document.visibilityState === "visible") {
+          isTabActive = true;
+          // logEvent('Tab Active', playlist[currentVideoIndex - 1].url, currentVideoIndex, videoPlayer.currentTime, isTabActive);
+        } else {
+          isTabActive = false;
+          // logEvent('Tab Inactive', playlist[currentVideoIndex - 1].url, currentVideoIndex, videoPlayer.currentTime, isTabActive);
+        }
+      });
     });
 
-    const videoPlayer = document.getElementById("videoPlayer");
-    videoPlayer.addEventListener('play', () => {
-      if (isTabActive) {
-        logEvent('Video Play - Tab Active', playlist[currentVideoIndex - 1].url, currentVideoIndex, videoPlayer.currentTime);
-      }
-    });
-    videoPlayer.addEventListener('pause', () => {
-      if (isTabActive) {
-        logEvent('Video Pause - Tab Active', playlist[currentVideoIndex - 1].url, currentVideoIndex, videoPlayer.currentTime);
-      }
-    });
 
   </script>
 </body>
