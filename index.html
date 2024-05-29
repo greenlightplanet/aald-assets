@@ -197,10 +197,8 @@
       <div class="info-container">
         <div class="text-container">
           <h1>Automated Loan Disbursal Videos</h1>
-
           <p id="videoTitle"></p>
         </div>
-
         <p class="indexElement"></p>
         <div class="nav-info">
           <div class="navigation-buttons">
@@ -213,6 +211,19 @@
   <script>
     let playlist = [];
     let currentVideoIndex = 0;
+    let isTabActive = true;
+
+    function logEvent(eventType, videoUrl, ordinal, videoTime) {
+      const timestamp = new Date().toISOString();
+      // console.log(`[${timestamp}] ${eventType} - Video URL: ${videoUrl} - Ordinal: ${ordinal} - Video Time: ${videoTime}`);
+      console.log(`
+[${timestamp}] Event Type: ${eventType}
+Video URL: ${videoUrl}
+Ordinal: ${ordinal}
+Video Time: ${videoTime}
+UUID: ${uuId}
+      `);
+    }
 
     function preloadAllVideos() {
       if (playlist.length > 0) {
@@ -228,7 +239,7 @@
     }
 
     function playPlaylist() {
-      console.log("Entered playPlaylist");
+      // console.log("Entered playPlaylist");
       const videoPlayer = document.getElementById("videoPlayer");
       const videoTitleElement = document.getElementById("videoTitle");
       const prospectIdElement = document.getElementById("prospectId");
@@ -244,14 +255,17 @@
       }
 
       function playNextVideo() {
-        console.log("Entered playNextVideo", currentVideoIndex);
+        // console.log("Entered playNextVideo", currentVideoIndex);
         if (currentVideoIndex < playlist.length) {
-          videoPlayer.src = playlist[currentVideoIndex].url;
+          const videoUrl = playlist[currentVideoIndex].url;
+          const ordinal = currentVideoIndex + 1;
+          logEvent('Video Opened', videoUrl, ordinal, 0);
+          videoPlayer.src = videoUrl;
           videoTitleElement.textContent = playlist[currentVideoIndex].title;
           prospectIdElement.textContent = `Prospect ID: ${prospectIdVariable}`;
           customerNameElement.textContent = `Customer Name: ${customerNameVariable}`;
           customerPhoneElement.textContent = `Customer Phone: ${customerPhoneNumberVariable}`;
-          videoIndex.innerHTML = getOrdinalIndicator(currentVideoIndex + 1);
+          videoIndex.innerHTML = getOrdinalIndicator(ordinal);
           videoPlayer.onended = playNextVideo;
 
           videoPlayer.play();
@@ -272,7 +286,7 @@
           return response.json();
         })
         .then((data) => {
-          console.log(data.response);
+          // console.log(data.response);
           if (data.Success && data.response) {
             const { prospect_id, customer_name, customer_phone_number, statements } = data.response;
             prospectIdVariable = prospect_id;
@@ -285,7 +299,7 @@
                 return { url: asset_url, title: statementText };
               });
               playlist = playlistArray;
-              console.log(playlist);
+              // console.log(playlist);
               preloadAllVideos();
               playPlaylist();
             } else {
@@ -324,7 +338,7 @@
     let customerPhoneNumberVariable;
 
     if (uuId) {
-      console.log("Initial UUID", uuId);
+      // console.log("Initial UUID", uuId);
       fetchPlaylist(uuId);
     } else {
       console.error("No uuId provided in the URL");
@@ -333,20 +347,42 @@
     }
 
     function playPrevious() {
-      console.log("Entered playPrevious");
+      // console.log("Entered playPrevious");
       if (currentVideoIndex > 1) {
         currentVideoIndex -= 2;
-        console.log(currentVideoIndex);
+        // console.log(currentVideoIndex);
         playPlaylist();
       }
     }
 
     function playNext() {
-      console.log("Entered playNext");
+      // console.log("Entered playNext");
       if (currentVideoIndex < playlist.length) {
         playPlaylist();
       }
     }
+
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "visible") {
+        isTabActive = true;
+        logEvent('Tab Active', playlist[currentVideoIndex - 1].url, currentVideoIndex, videoPlayer.currentTime);
+      } else {
+        isTabActive = false;
+        logEvent('Tab Inactive', playlist[currentVideoIndex - 1].url, currentVideoIndex, videoPlayer.currentTime);
+      }
+    });
+
+    const videoPlayer = document.getElementById("videoPlayer");
+    videoPlayer.addEventListener('play', () => {
+      if (isTabActive) {
+        logEvent('Video Play - Tab Active', playlist[currentVideoIndex - 1].url, currentVideoIndex, videoPlayer.currentTime);
+      }
+    });
+    videoPlayer.addEventListener('pause', () => {
+      if (isTabActive) {
+        logEvent('Video Pause - Tab Active', playlist[currentVideoIndex - 1].url, currentVideoIndex, videoPlayer.currentTime);
+      }
+    });
 
   </script>
 </body>
