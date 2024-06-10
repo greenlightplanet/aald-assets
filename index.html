@@ -246,14 +246,14 @@
     video_time: videoTime,
     tab_activity: isTabActive,
     uuid: uuId,
-    asset_id: 123,
+    asset_id: asset_id,
     prospect_id: prospectIdVariable,
   };
 
   console.log('--- Request Body (logEvent):');
   console.log(data);
 
-  fetch('http://localhost:8000/glpadmin/aald/log_video_event/', {
+  fetch('http://dev.glpapps.com/glpadmin/aald/log_video_event/', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
@@ -316,6 +316,8 @@ function logPageLoadEvent(eventType) {
         if (currentVideoIndex < playlist.length) {
           const videoUrl = playlist[currentVideoIndex].url;
           const asset_id = playlist[currentVideoIndex].asset_id;
+          // console.log("line 319");
+          // console.log(asset_id);
           const ordinal = currentVideoIndex + 1;
           logEvent('Video Started', videoUrl, ordinal, 0, isTabActive, asset_id);
           videoPlayer.src = videoUrl;
