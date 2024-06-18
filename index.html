@@ -253,7 +253,7 @@
   console.log('--- Request Body (logEvent):');
   console.log(data);
 
-  fetch('http://dev.glpapps.com/glpadmin/aald/log_video_event/', {
+  fetch('https://admin.glpapps.com/glpadmin/aald/log_video_event/', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
@@ -273,7 +273,7 @@ function logPageLoadEvent(eventType) {
   console.log('--- Request Body (logPageLoadEvent):');
   console.log(data);
 
-  fetch('http://dev.glpapps.com/glpadmin/aald/log_page_load_event/', {
+  fetch('https://admin.glpapps.com/glpadmin/aald/log_page_load_event/', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
@@ -437,15 +437,28 @@ function logPageLoadEvent(eventType) {
     document.addEventListener("DOMContentLoaded", function () {
       logPageLoadEvent('Page Loaded');
 
-      document.addEventListener("visibilitychange", function () {
+      function handleVisibilityChange() {
         if (document.visibilityState === "visible") {
           isTabActive = true;
-          // logEvent('Tab Active', playlist[currentVideoIndex - 1].url, currentVideoIndex, videoPlayer.currentTime, isTabActive);
         } else {
           isTabActive = false;
-          // logEvent('Tab Inactive', playlist[currentVideoIndex - 1].url, currentVideoIndex, videoPlayer.currentTime, isTabActive);
         }
-      });
+        logEvent('Tab Visibility Changed', videoUrl, ordinal, 0, isTabActive, asset_id);
+      }
+
+      function handleWindowFocus() {
+        isTabActive = true;
+        logEvent('Window Focused', videoUrl, ordinal, 0, isTabActive, asset_id);
+      }
+
+      function handleWindowBlur() {
+        isTabActive = false;
+        logEvent('Window Blurred', videoUrl, ordinal, 0, isTabActive, asset_id);
+      }
+
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+      window.addEventListener("focus", handleWindowFocus);
+      window.addEventListener("blur", handleWindowBlur);
     });
 
 
